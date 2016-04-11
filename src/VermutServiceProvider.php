@@ -6,6 +6,12 @@ use Illuminate\Support\ServiceProvider;
 
 class VermutServiceProvider extends ServiceProvider
 {
+    /**
+     * Indicates if loading of the provider is deferred.
+     *
+     * @var bool
+     */
+    protected $defer = true;
 
     /**
      * Register the service provider.
@@ -14,17 +20,20 @@ class VermutServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('vermut.marker', function ($app) {
-            return new Marker($app['redis']);
+        $this->app->singleton('vermut', function ($app) {
+            return new Vermut($app['redis'], $app['config']['vermut']);
         });
+    }
 
-        $this->app->singleton('vermut.analyzer', function ($app) {
-            return new Analyzer($app['redis']);
-
-        });
-
-        $this->app->singleton('vermut.marker', function ($app) {
-
-        });
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides()
+    {
+        return [
+            'vermut'
+        ];
     }
 }

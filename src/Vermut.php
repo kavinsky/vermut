@@ -3,18 +3,21 @@
 namespace Kavinsky\Vermut;
 
 use Illuminate\Contracts\Redis\Database as RedisContract;
-use Kavinsky\Vermut\Events\EventInterface;
-use Ubench;
+use Illuminate\Support\Arr;
 
 class Vermut
 {
-
     const GRANULARITY_Y = 0;
     const GRANULARITY_M = 1;
     const GRANULARITY_D = 2;
     const GRANULARITY_H = 3;
     const GRANULARITY_I = 4;
 
+    /**
+     * Granularity levels
+     *
+     * @var array
+     */
     protected static $granularity = [
         'y',
         'y-m',
@@ -48,8 +51,8 @@ class Vermut
     public function __construct(RedisContract $redis, array $options)
     {
         $this->redis = $redis;
-        $this->prefix = array_pull($options, 'prefix', 'vermut');
-        $this->event_dictionary = array_pull($options, 'events', []);
+        $this->prefix = Arr::pull($options, 'prefix', 'vermut');
+        $this->event_dictionary = Arr::pull($options, 'events', []);
     }
 
     /**
@@ -57,30 +60,33 @@ class Vermut
      *
      * @param string $event
      * @param integer $id
-     * @param int $granularity_level
+     * @param int $level
      */
     public function mark($event, $id, $level = self::GRANULARITY_I)
     {
-        if (array_key_exists($event, $this->event_dictionary)) {
-            $level = array_get($this->event_dictionary[$event], 'granularity', $level);
-        }
+        $level = $this->defaultGranularity($event, $level);
 
         $granularity = 0;
         while ($granularity <= $level) {
             $key = $this->makeKey('mark:'.$event.':'.$this->makeGranularity($granularity));
 
             $this->pushOperation('setbit', [$key, $id, 1]);
-//            $this->addToKeyDict($key);
+            $this->addToKeyDict($key);
 
             $granularity++;
         }
     }
 
+    /**
+     * Increment a event count
+     *
+     * @param string $event
+     * @param int $count
+     * @param int $level
+     */
     public function incr($event, $count = 1, $level = self::GRANULARITY_I)
     {
-        if (array_key_exists($event, $this->event_dictionary)) {
-            $level = array_get($this->event_dictionary[$event], 'granularity', $level);
-        }
+        $level = $this->defaultGranularity($event, $level);
 
         $granularity = 0;
         while ($granularity <= $level) {
@@ -92,18 +98,22 @@ class Vermut
                 $this->pushOperation('incr', [$key]);
             }
 
-//            $this->addToKeyDict($key);
+            $this->addToKeyDict($key);
 
             $granularity++;
         }
     }
 
+    /**
+     * Decrement a event count
+     *
+     * @param string $event
+     * @param int $count
+     * @param int $level
+     */
     public function decr($event, $count = 1, $level = self::GRANULARITY_I)
     {
-        if (array_key_exists($event, $this->event_dictionary)) {
-            $level = array_get($this->event_dictionary[$event], 'granularity', $level);
-        }
-
+        $level = $this->defaultGranularity($event, $level);
 
         $granularity = 0;
         while ($granularity <= $level) {
@@ -115,7 +125,7 @@ class Vermut
                 $this->pushOperation('decr', [$key]);
             }
 
-//            $this->addToKeyDict($key);
+            $this->addToKeyDict($key);
 
             $granularity++;
         }
@@ -139,6 +149,8 @@ class Vermut
      */
     protected function addToKeyDict($key)
     {
+        // ill not use key dict for the moment
+        // but just in case
         //$this->pushOperation('sadd', [$this->makeKey('keys'), $key]);
     }
 
@@ -194,5 +206,21 @@ class Vermut
     protected function makeGranularity($level)
     {
         return date(static::$granularity[$level]);
+    }
+
+    /**
+     * Get default granularity for event name
+     *
+     * @param $event
+     * @param $default
+     * @return int
+     */
+    protected function defaultGranularity($event, $default)
+    {
+        if (array_key_exists($event, $this->event_dictionary)) {
+            return array_get($this->event_dictionary[$event], 'granularity', $default);
+        }
+
+        return $default;
     }
 }
