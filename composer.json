@@ -1,0 +1,30 @@
+{
+    "name": "kavinsky/vermut",
+    "type": "library",
+    "description": "Fast stats aggregator for Redis",
+    "keywords": ["aggregator", "stats", "predis"],
+    "homepage": "http://github.com/kavinsky/vermut",
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/kavinsky/vermut/issues"
+    },
+    "authors": [
+        {
+            "name": "Ignacio Muñoz Fernandez",
+            "email": "nmunozfernandez@gmail.com",
+            "homepage": "http://github.com/kavinsky"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.9",
+        "illuminate/support": "^5.1",
+        "illuminate/redis": "^5.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0",
+        "devster/ubench": "^1.2.0"
+    },
+    "autoload": {
+        "psr-4": {"Kavinsky\\Vermut\\": "src/"}
+    }
+}
