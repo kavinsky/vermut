@@ -1,8 +1,8 @@
 {
     "name": "kavinsky/vermut",
     "type": "library",
-    "description": "Fast stats aggregator for Redis",
-    "keywords": ["aggregator", "stats", "predis"],
+    "description": "Fast stats aggregator for Laravel",
+    "keywords": ["aggregator", "stats", "redis"],
     "homepage": "http://github.com/kavinsky/vermut",
     "license": "MIT",
     "support": {
